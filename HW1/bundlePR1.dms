@@ -1,0 +1,268 @@
+#!/usr/local/bin/perl
+
+#####################################################################
+# BUNDLE - a utility for simplifying project turn-in
+#
+# April, 1997 -- Adam Tilghman, UCSD ACS
+#
+# Description: Create a TAR file suitable for upload to gradescope.
+#
+# Note: We recommend that this script be named "bundleP1" for project
+# P1, bundleP2 for P2, and so on.  This will avoid confusion in later
+# classes which may use the raw "turnin" program without this wrapper 
+# script.
+#
+# After bundling/turnin, the resulting TAR files will be placed in the 
+# turnin.dest directory as <username>.<project>.
+
+#############
+# Configuration section -- change required files, project name,
+# and courselabel here.
+#
+$projectname = "PR1";
+$courselabel = "cs12s";
+$checkCompilePath = "/home/linux/ieng6/${courselabel}/public/bin";
+$checkCompile="${checkCompilePath}/checkCompile${projectname}.py";
+
+@DESIRED_FILES = ( "Counter.java", "CounterTest.java","ReverseArray.java", "ReverseList.java", "HW1-Answers.pdf", "Problem3.txt" );
+
+# End of Configuration section
+#############
+use File::Temp qw/ tempdir /;
+
+############
+# Sanity check - there should be no arguments.
+# Students may try to run "bundleP1 ~/projs/P1" in the expectation
+# that they can bundle up another directory that way.  not so,
+# at least for the time being.
+&usage() if ($#ARGV > -1);
+
+############
+# Setup
+$| = 1; # unbuffer stdout
+
+############
+# Figure out which files are here, which aren't
+#
+# Also, gather up file size information for later comparison
+# with maximum project file size from "turnin -q"
+@NF = ( ); @FILES = ( );
+foreach $file ( @DESIRED_FILES ) {
+	if (-r $file) { push(@FILES, $file); $BYTECOUNT += (stat(_))[7]; }
+		else { push(@NF, $file); }
+}
+
+# If any were missing, warn the user.
+if (@NF) {
+	print "\nThe following file(s) are listed as required but \n";
+	print "were NOT FOUND within the current directory:\n";
+
+	for($x = 0; $x <= $#NF; $x++) {
+		printf("\t%-2d.\t%s\n", ($x+1), $NF[$x]);}
+
+	if (&y_or_n("\nDo you wish to proceed? [y/n]")) 
+	         { print "OK.  Proceeding.\n\n"; }
+	    else { print "Aborting.\n"; exit(0); }
+}
+
+#################
+# Catch case of *no* files to turn in.
+
+if (!@FILES) {
+	print "There are no valid files to bundle.  Aborting.\n\n";
+	exit(0);
+}
+
+#################
+# Now show them the list of files to be turned in
+
+if (@NF) {
+	print "Only these required files are present:\n\n";
+} else {
+	print "Good; all required files are present:\n\n";
+}
+
+foreach $x ( sort @FILES) { print "\t$x\n"; }
+
+if (&y_or_n("\nDo you want to go ahead and bundle  these files? [y/n]")) 
+	{ print "OK.  Proceeding.\n\n"; }
+	else { print "Aborting.\n"; exit(0); }
+
+###############
+# Probe to see whether a turnin file already exists
+# catch errors from "turnin" here.  Also gather up
+# per-project information such as maximum file size.
+#$cmd = "turnin -c $courselabel -p $projectname -q";
+#open(IN, "$cmd|");
+#@lines = <IN>;
+#close(IN);
+#
+#$result = ($? >> 8) + 0; # catch exit code
+#
+## We should have better handling here.  Perhaps a general function
+## to deal with turnin result codes would be appropriate.
+#if ($result > 0) {
+#	&contactprof("$0: turnin returned exit code \"$result\" on query\n");
+#}
+#
+#
+################
+## Gather information from "turnin -q"
+#$previousexists = grep(/previously turned-in/, @lines);
+#($line) = grep(/previous\ file\ dated:\s+.+$/, @lines); 
+#	($previousdate) = ($line =~ /dated:\s+(.+)$/);
+#($line) = grep(/previous\ file\ size:\s+.+$/, @lines); 
+#	($previoussize) = ($line =~ /size:\s+(\d+)/);
+#
+#($line) = grep(/Maximum\ project\ file\ size:\s+.+$/, @lines); 
+#	($maxfilesize) = ($line =~ /size:\s+(\d+)/);
+#	if (! $maxfilesize ) {
+#	       # turnin -q didn't report a Maximum project file size
+#	       ($maxfilesize) = 0;
+#	}
+#
+################
+## Warn them if a previously-turned-in file exists
+#if ($previousexists) {
+#	print "A previously turned-in file exists:\n";
+#	print "\tdated $previousdate, size $previoussize bytes.\n\n";
+#
+#	if (&y_or_n("Do you wish to over-write this existing file? [y/n] "))
+#		{ print "OK.  Proceeding.\n\n"; }
+#		  else { print "Aborting.\n"; exit(0); }
+#}
+#
+################
+## Catch the case where the turnin will be truncated due to file size limit.
+#$BYTECOUNT += (2048 + (512 * $#FILES)); # account for blocking factor
+#$kb = int($BYTECOUNT / 1024);
+#
+#if ($kb > $maxfilesize && $maxfilesize > 0) {
+#	printf("Warning:  Your files total %d KB, but limit is %d KB.\n",
+#		$kb, $maxfilesize);
+#
+#	printf("TURNIN WILL BE TRUNCATED; SOME FILES WILL BE LOST.\n");
+#
+#	if (&y_or_n("Do you wish to proceed with the turnin? [y/n] "))
+#		{ print "OK.  Proceeding.\n\n"; }
+#		  else { print "Aborting.\n"; exit(0); }
+#}
+#
+##############
+# Finally, run through "turnin"
+
+# use xargs to pass a bunch of filenames to tar
+# Students will see "turnin" output, which should
+# be instructive in the case of an error. (past turnin deadline,
+# for example).
+#
+#
+# Use "-b 1" to specify blocking factor of 512 bytes. This should
+# minimize the overhead of the TAR format.  If b.f. is changed,
+# adjust BYTECOUNT calculation above.
+#
+# First Check that files compile
+# Create a tar file 
+my $user = getpwuid( $< ); 
+my $tmpdir = tempdir( CLEANUP => 1);
+my $usertar = sprintf("%s/%s.%s.tar", $tmpdir, $user, $projectname);
+my $localtar = sprintf("./%s.%s.tar",$user,$projectname);
+open(CHECK, "| xargs tar cf ${usertar}");
+print CHECK join("\n", @FILES), "\n";
+close(CHECK);
+my $cmd = sprintf("%s %s", $checkCompile, $usertar);
+print "Checking if your files compile .... please be patient\n";
+print "\tRunning $cmd\n";
+my @info = `$cmd 2>&1`;
+my $result = $?;
+foreach my $i (@info) {
+	print "$i";
+}
+if ($result != 0 )
+{
+	print "COMPILER ERRORS, you CANNOT turn this bundle of files in\n"; 
+	exit(-1);
+}
+
+printf("\nCreated Tar File %s\n", $usertar);
+use File::Copy qw(move);
+move $usertar,$localtar;
+printf("\n------------------------------------------------------------\n");
+printf("The file you should upload to Gradescope is:  %s\n", $localtar);
+printf("----------------------------------------------------------------\n");
+print "You can list the contents of this bundle with the command: 'tar tvf ${localtar}'\n";
+print "Success.\n";
+
+exit;
+
+##########
+# Utility functions
+
+sub
+usage {
+	print <<EOM;
+Usage: change to the desired directory, 
+           then run "$0" with no arguments.
+EOM
+	
+	exit(1);
+}
+
+sub
+contactacs {
+	local($message) = @_;
+
+	print <<EOM;
+
+An error has occurred within TURNIN.  Please contact
+Academic Computing Services, x44060, acs-consult\@ucsd.edu
+and give us the text of the following message:
+
+$message
+
+Thank you.
+
+EOM
+
+	exit(0);
+}
+
+
+sub
+contactprof {
+	local($message) = @_;
+
+	print <<EOM;
+
+An error has occurred during the TURNIN process.  Please notify
+your instructor or TA and include the text of the following message:
+
+$message
+
+Thank you.
+
+EOM
+
+	exit(0);
+}
+
+# print a prompt and handle a "y or n" response.
+# return true if first char of response is y, 
+# false if first char of response is n, 
+# else reprompts 
+sub y_or_n {
+    local($prompt) = @_;
+    while (1) {
+        print STDOUT $prompt;
+        local($answer) = scalar(<STDIN>);
+        chop($answer);
+        if ($answer =~ /^[yn]$/) {
+            return ($answer =~ /y/);
+        } else {
+            print STDOUT "Please answer y or n.\n";
+        }
+    }
+}                               
+ 
+ 
+

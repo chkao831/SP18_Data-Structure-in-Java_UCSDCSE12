@@ -1,0 +1,93 @@
+CSE 12 Homework 2
+
+Name: Chih-Hsuan Kao
+PID: A92092372
+Login: cs12sgh
+Date: April 24, 2018
+Email: c4kao@ucsd.edu
+
+TRUE/FALSE
+
+1. TRUE 
+2. TRUE
+3. FALSE
+4. FALSE
+5. FALSE
+6. TRUE
+7. FALSE
+8. TRUE
+9. FALSE
+10. FALSE 
+11. FALSE
+12. TRUE
+13. TRUE
+14. TRUE
+15. TRUE
+16. FALSE
+17. TRUE
+18. FALSE
+19. TRUE
+20. TRUE
+
+RUNTIME
+
+1.
+    Running Time: O(n) 
+    Explanation: 
+        There is a single loop that runs [int((n+1)/2)] times. Each time the
+        loop runs, it executes 1 instruction. So the total number of instruction
+        executed is 1*[int((n+1)/2)] = O(n). 
+2. 
+    Running Time: O(log n)
+    Explanation: 
+        Note that i value grows logarithmically. There is a single loop that
+        runs [int(log(n-1)) + 1] with log base of 2. Each time the loop runs, it
+        executes 1 instruction. So the total number of
+        instruction executed is 1*[int(log(n-1) + 1] = O(log n) w/log base of 2.
+3. 
+    Running Time: O(n^2)
+    Explanation: 
+        The outer loop is executed for n values; and the inner loop is also
+        executed for n values. For each value that the outer loop runs, the
+        inner loop is executed for another n times. So the total number of
+        instruction executed is n*n = n^2 = O(n^2).
+    
+4. 
+    Running Time: O(n)
+    Explanation: 
+        Note that the two loops are independent to each other, so needs to be
+        considered separately. 
+        For the first loop, it runs n times to execute one instruction (sum++);
+        similarly, for the second loop, it also runs n times to execute the only
+        instruction (sum++). They both have time complexity of O(n). 
+        The total number of instruction executed is 2*O(n) = O(n). 
+5. 
+    Running Time: O(n)  
+    Explanation: 
+        There is a single loop that runs 2*n times. Each time the loop runs, it
+        executes 1 instruction. So the total number of instruction executed is
+        2*n = O(n). 
+6. 
+    Running Time: O(n^2)
+    Explanation: 
+        There is a single loop that runs n*n times. Each time the loop runs, it
+        executes 1 instruction. So the total number of instruction executed n^2
+        times = O(n^2). 
+7. 
+    Running Time: O(n^3)
+    Explanation: 
+        The outer loop is executed for n values; and the inner loop is executed
+        for n^2 values. There is one instruction to be executed every time going
+        inside the inner loop. For each value that the outer loop runs, the
+        inner loop is executed for another n*n times. So the total number of
+        instruction executed is n*n*n = n^3 = O(n^3). 
+8. 
+    Running Time: O(n)
+    Explanation:
+        The outer loop is executed for n values; and the inner loop is executed
+        for 10000 times. There is one instruction to be executed every time
+        going inside the inner loop. For each value that the outer loop runs
+        (there are n values), the inner loop is executed for another 10000
+        times. So the total number of instruction is 10000*n = O(10000*n) =
+        O(n).
+

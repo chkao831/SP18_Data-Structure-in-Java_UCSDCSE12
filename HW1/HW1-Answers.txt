@@ -1,0 +1,67 @@
+File: HW1-Answers
+This file contains answers to the questions specified in the PR1.pdf
+Author: Chih-Hsuan Kao
+PID: A92092372
+Login: cs12sgh
+Email: c4kao@ucsd.edu
+Date: April 14, 2018
+
+1. What command line is used to create the javadoc documentation in HW1/doc?
+
+    javadoc -author -version -d doc Counter.java
+
+2. What command-line flag is used to to create the author and version entries for the class
+
+    -author
+    -version
+
+3. Tell us if the following properly run unit tests
+
+    java -cp '.:/usr/share/java/junit4.jar'  org.junit.runner.JUnitCore CounterTest	
+        It properly runs the code. 
+	java -cp '.:/usr/share/java/*'  org.junit.runner.JUnitCore CounterTest	
+        It properly runs the code. 
+	java -cp '.:/usr/share/java'  org.junit.runner.JUnitCore CounterTest	
+        Error: Could not find or load main class org.junit.runner.JUnitCore
+	    (Explanation) The file under the classpath is not properly specified. 
+        /usr/share/java should be followed by files in the class path, i.e.
+        the entire directory of .jar files in the class path must be specified. 
+    java -cp '.:/usr/share/java/junit4.jar'  JUnitCore CounterTest	
+        Error: Could not find or load main class org.junit.runner.JUnitCore
+        (Explanation) JUnitCore is a class. And the org.junit.runner is a
+        package, that provides the JUnitCore to run the tests. Thus, to run
+        tests from the command line, we must include the package name. 
+    java -cp '.:/usr/share/java/junit.jar'  JUnitCore CounterTest	
+        Error: Could not find or load main class org.junit.runner.JUnitCore
+        (Explanation) The cause of error is the same as the fourth one. 
+        JUnitCore is a class. And the org.junit.runner is a
+        package, that provides the JUnitCore to run the tests. Thus, to run
+        tests from the command line, we must include the package name. 
+
+4. -cp and -classpath are “command-line switches” to the java and 
+javac command to set Java’s classpath. 
+What is another way to set the classpath without using a command-line switch? 
+    
+    Besides the command-line switch, we can also use shell script to do this.
+    For example, for C shell (csh), we can use 
+        set path=(/usr/share/java/junit4.jar $path)
+    And there are other specifications for bash, ksh, sh, etc. 
+
+5. Why must the main method of a java program be declared static?
+        
+    main() is called by the JVM before any objects are made. It should be
+    declared static because it should be invoked directly via the class. 
+
+6. Suppose you are given a program in the current directory called a.out,
+Assume that the PATH environment variable has contents
+/bin:/usr/local/bin:/usr/bin,  give command lines to do the following 
+	
+    a. execute a.out and redirect standard error (stderr)
+    to a file called "outerr.log" 
+	    ./a.out2 >> outerr.log
+    b. execute a.out and redirect stdout and stderr 
+    to a file named "combined.log" 
+        ./a.out >> combined.log 2>&1
+
+
+

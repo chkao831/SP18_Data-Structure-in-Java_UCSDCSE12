@@ -1,0 +1,33 @@
+File: Problem3.txt
+
+Name: Chih-Hsuan Kao
+Login: cs12sgh
+PID: A92092372
+Email: c4kao@ucsd.edu
+Date: April 12, 2018
+
+1. False
+2. False
+3. False
+4. True
+5. True
+6. False
+7. True
+8. False
+9. False
+10. True
+11. True
+12. True
+13. False
+14. True
+15. False
+16. False
+17. False
+18. False
+19. True
+20. True
+21. True
+22. False
+23. False
+24. True
+25. True
